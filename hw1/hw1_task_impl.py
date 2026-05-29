@@ -1,5 +1,5 @@
 import torch
-
+import statistics
 
 # ============================================================================
 # Part 1: Implement PyTorch Functions
@@ -37,10 +37,13 @@ def make_compute_fn(num_ops: int, compiled: bool = True):
     """Return an eager or compiled function whose work scales with num_ops."""
 
     def fn(x: torch.Tensor) -> torch.Tensor:
-        pass
+        acc = x
+        for _ in range(num_ops):
+            acc = acc * x + x
+        return acc
 
-    # TODO (1 line): return either `fn` or `torch.compile(fn)` based on `compiled`
-    pass
+    # DONE (1 line): return either `fn` or `torch.compile(fn)` based on `compiled`
+    return torch.compile(fn) if compiled else fn
 
 
 # ============================================================================
@@ -62,8 +65,20 @@ def benchmark_fn(fn, *args, warmup=25, rep=100) -> float:
         fn(*args)
     torch.cuda.synchronize()
 
-    # TODO: time `rep` runs using CUDA events and return median latency (ms)
-    pass
+    # DONE: time `rep` runs using CUDA events and return median latency (ms)
+    times = []
+    for _ in range(rep):
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+
+        start.record()
+        fn(*args)
+        end.record()
+
+        torch.cuda.synchronize()
+        times.append(start.elapsed_time(end))
+
+    return float(statistics.median(times))
 
 
 # TASK 3: Compute element-wise operation metrics from measured runtime.
@@ -83,8 +98,21 @@ def benchmark_fn(fn, *args, warmup=25, rep=100) -> float:
 
 
 def compute_elementwise_metrics(num_elements, num_ops, bytes_per_element, ms, variant):
-    # TODO: compute total FLOPs, arithmetic intensity, and achieved FLOP/s
-    pass
+    # DONE: compute total FLOPs, arithmetic intensity, and achieved FLOP/s
+    total_flops = num_elements * num_ops * 2
+
+    if variant == "compiled":
+        # Fused kernel: one read + one write at kernel boundary.
+        total_bytes = num_elements * 2 * bytes_per_element
+    elif variant == "eager":
+        # Each loop iteration: multiply reads 2 tensors+writes 1,
+        # add reads 2 tensors+writes 1 => 6 elements of traffic per op.
+        total_bytes = num_elements * num_ops * 6 * bytes_per_element
+    else:
+        raise ValueError(f"Unknown variant: {variant}")
+
+    ai = total_flops / total_bytes
+    achieved_flops = total_flops / (ms * 1e-3)
     return total_flops, ai, achieved_flops
 
 

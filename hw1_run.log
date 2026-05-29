@@ -1,0 +1,36 @@
+======================================================================
+HW1: GPU Roofline Model — NVIDIA L40S 48GB GDDR6
+======================================================================
+
+Theoretical specs (FP32):
+  Peak compute:    92 TFLOP/s
+  Peak bandwidth:  0.86 TB/s
+  Ridge point:     106.0 FLOP/Byte
+
+Running benchmarks (first run compiles kernels via torch.compile)...
+  lowest-AI:  0.845 ms | BW: 0.64 TB/s
+    1 ops (   eager): 2.088 ms | AI: 0.0833 FLOP/B | 0.06 TFLOP/s
+    1 ops (compiled): 0.870 ms | AI: 0.25 FLOP/B | 0.15 TFLOP/s
+    2 ops (   eager): 4.704 ms | AI: 0.0833 FLOP/B | 0.06 TFLOP/s
+    2 ops (compiled): 0.873 ms | AI: 0.5 FLOP/B | 0.31 TFLOP/s
+    4 ops (   eager): 9.859 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+    4 ops (compiled): 0.874 ms | AI: 1 FLOP/B | 0.61 TFLOP/s
+    8 ops (   eager): 20.169 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+    8 ops (compiled): 0.874 ms | AI: 2 FLOP/B | 1.23 TFLOP/s
+   16 ops (   eager): 40.792 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+   16 ops (compiled): 0.873 ms | AI: 4 FLOP/B | 2.46 TFLOP/s
+   32 ops (   eager): 82.024 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+   32 ops (compiled): 0.875 ms | AI: 8 FLOP/B | 4.91 TFLOP/s
+   64 ops (   eager): 164.525 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+   64 ops (compiled): 0.875 ms | AI: 16 FLOP/B | 9.82 TFLOP/s
+  128 ops (   eager): 329.372 ms | AI: 0.0833 FLOP/B | 0.05 TFLOP/s
+  128 ops (compiled): 0.876 ms | AI: 32 FLOP/B | 19.62 TFLOP/s
+  matmul 1024×1024: 0.093 ms | AI: 170.7 FLOP/B | 23.04 TFLOP/s
+  matmul 2048×2048: 0.413 ms | AI: 341.3 FLOP/B | 41.57 TFLOP/s
+  matmul 4096×4096: 3.636 ms | AI: 682.7 FLOP/B | 37.80 TFLOP/s
+
+Generating plots...
+
+Roofline plot saved to /home/niko/hw/gpu_and_inference_hw/hw1/results/roofline.png
+
+Done! Check the results/ directory for plots.
